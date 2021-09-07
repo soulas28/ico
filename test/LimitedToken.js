@@ -10,8 +10,22 @@ contract("LimitedToken", (accounts) => {
   beforeEach(async () => {
     instance = await LimitedToken.new(tokenName, tokenSymbol);
   });
-  it("inherit from ERC20 implement.", async () => {
-    expect(await instance.name.call()).to.eq(tokenName);
-    expect(await instance.symbol.call()).to.eq(tokenSymbol);
+
+  describe("Unlock method", async () => {
+    it("should be executed by contract owner", async () => {
+      await truffleAssert.passes(instance.Unlock.sendTransaction());
+    });
+
+    it("should not be executed by non-owner users", async () => {
+      await truffleAssert.reverts(
+        instance.Unlock.sendTransaction({ from: accounts[1] })
+      );
+    });
+
+    it("should set the limitation status false", async () => {
+      expect(await instance.isLimited.call()).to.eq(true);
+      await instance.Unlock.sendTransaction();
+      expect(await instance.isLimited.call()).to.eq(false);
+    });
   });
 });

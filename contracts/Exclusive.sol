@@ -5,7 +5,7 @@ contract Exclusive {
   bool private _isLocked = false;
 
   modifier exclusive() {
-    require(_isLocked, "Temporaly Unavailable");
+    require(!_isLocked, "Temporaly Unavailable");
     _isLocked = true;
     _;
     _isLocked = false;

@@ -27,10 +27,10 @@ contract LimitedToken is ERC20, AccessControl {
   }
 
   function _beforeTokenTransfer(
-    address,
+    address from,
     address,
     uint256
   ) internal view override {
-    require(!isLimited(), "Transfer not allowed.");
+    require(from == address(this) || !isLimited(), "Transfer not allowed.");
   }
 }

@@ -8,4 +8,8 @@ contract AccessControl {
     require(msg.sender == _owner, "Permission Denied");
     _;
   }
+
+  function owner() public view returns (address) {
+    return _owner;
+  }
 }

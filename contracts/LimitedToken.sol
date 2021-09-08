@@ -5,17 +5,21 @@ import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 import "./AccessControl.sol";
 
 contract LimitedToken is ERC20, AccessControl {
-  bool public isLimited = false;
+  bool private _isLimited = false;
 
   constructor(string memory name_, string memory symbol_)
     ERC20(name_, symbol_)
   {}
 
+  function isLimited() public view returns (bool) {
+    return _isLimited;
+  }
+
   function lock() internal onlyOwner {
-    isLimited = true;
+    _isLimited = true;
   }
 
   function unlock() public onlyOwner {
-    isLimited = false;
+    _isLimited = false;
   }
 }

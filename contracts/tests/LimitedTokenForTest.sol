@@ -8,7 +8,7 @@ contract LimitedTokenForTest is LimitedToken {
     LimitedToken(name_, symbol_)
   {}
 
-  function BypassedLock() public {
-    Lock();
+  function bypassedLock() public {
+    lock();
   }
 }

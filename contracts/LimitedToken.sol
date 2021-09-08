@@ -11,11 +11,11 @@ contract LimitedToken is ERC20, AccessControl {
     ERC20(name_, symbol_)
   {}
 
-  function Lock() internal onlyOwner {
+  function lock() internal onlyOwner {
     isLimited = true;
   }
 
-  function Unlock() public onlyOwner {
+  function unlock() public onlyOwner {
     isLimited = false;
   }
 }

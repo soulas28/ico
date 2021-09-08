@@ -46,5 +46,28 @@ contract("LimitedToken", (accounts) => {
       await instance.unlock.sendTransaction();
       expect(await instance.isLimited.call()).to.eq(false);
     });
+
+    it("should emit Unlocked event", async () => {
+      truffleAssert.eventEmitted(
+        await instance.unlock.sendTransaction(),
+        "Unlocked"
+      );
+    });
+  });
+
+  describe("transfer method", () => {
+    it("should be fail if locked", async () => {
+      await instance.bypassedLock.sendTransaction();
+      await truffleAssert.reverts(
+        instance.transfer.sendTransaction(accounts[1], 0),
+        "Transfer not allowed."
+      );
+    });
+
+    it("should be success if not locked", async () => {
+      await truffleAssert.passes(
+        instance.transfer.sendTransaction(accounts[1], 0)
+      );
+    });
   });
 });

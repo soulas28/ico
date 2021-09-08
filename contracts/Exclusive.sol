@@ -2,11 +2,11 @@
 pragma solidity 0.8.7;
 
 contract Exclusive {
-  bool private isLocked = false;
+  bool private _isLocked = false;
 
   modifier exclusive() {
-    isLocked = true;
+    _isLocked = true;
     _;
-    isLocked = false;
+    _isLocked = false;
   }
 }

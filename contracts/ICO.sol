@@ -10,7 +10,7 @@ contract ICO is LimitedToken, Exclusive {
   uint256 public unitPeriodBalance;
 
   uint256 private _numOfParticipants = 0;
-  mapping(address => uint256) private participants;
+  mapping(address => uint256) private _participants;
 
   constructor(
     string memory name_,
@@ -31,27 +31,27 @@ contract ICO is LimitedToken, Exclusive {
   function participate() public payable exclusive returns (bool) {
     require(hasEnded(), "The period has already been ended.");
     require(msg.sender != owner(), "Owner cannot participate.");
-    require(participants[msg.sender] == 0, "You are already participated.");
+    require(_participants[msg.sender] == 0, "You are already participated.");
 
-    participants[msg.sender] = msg.value;
+    _participants[msg.sender] = msg.value;
     _numOfParticipants += 1;
     return true;
   }
 
   function participation(address account_) public view returns (uint256) {
-    return participants[account_];
+    return _participants[account_];
   }
 
   function withdrawToken() public exclusive returns (bool) {
     require(!hasEnded(), "The period is still ongoing.");
-    require(participants[msg.sender] != 0, "There's no tokens to withdraw.");
+    require(_participants[msg.sender] != 0, "There's no tokens to withdraw.");
     uint256 window = unitPeriodBalance / numOfParticipants();
-    if (participants[msg.sender] >= window) {
+    if (_participants[msg.sender] >= window) {
       this.transfer(msg.sender, window);
     } else {
-      this.transfer(msg.sender, participants[msg.sender]);
+      this.transfer(msg.sender, _participants[msg.sender]);
     }
-    participants[msg.sender] = 0;
+    _participants[msg.sender] = 0;
     return true;
   }
 

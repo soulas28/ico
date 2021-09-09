@@ -9,7 +9,7 @@
   "scripts": {
     "test": "truffle test",
     "ganache": "ganache-cli -e 200000",
-    "coverage": "truffle run coverage --network development"
+    "coverage": "truffle run coverage"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.1",

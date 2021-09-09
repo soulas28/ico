@@ -33,10 +33,18 @@ contract("ICO", (accounts) => {
       });
     });
 
-    it("should be success if not participated yet", async () => {
-      await truffleAssert.passes(
-        instance.participate.sendTransaction({ from: accounts[1] })
-      );
+    describe("should put the participants in list", () => {
+      it("when the caller is accounts[1]", async () => {
+        instance.participate.sendTransaction({ from: accounts[1] });
+        expect(await instance.participation.call(accounts[1])).to.be.true;
+        expect(await instance.participation.call(accounts[2])).to.be.false;
+      });
+
+      it("when the caller is accounts[2]", async () => {
+        expect(await instance.participation.call(accounts[1])).to.be.false;
+        instance.participate.sendTransaction({ from: accounts[2] });
+        expect(await instance.participation.call(accounts[2])).to.be.true;
+      });
     });
 
     describe("should set the value of numOfParticipants", () => {

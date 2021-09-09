@@ -24,4 +24,8 @@ contract ICO is LimitedToken, Exclusive {
     _numOfParticipants += 1;
     return true;
   }
+
+  function participation(address account_) public view returns (bool) {
+    return participants[account_];
+  }
 }

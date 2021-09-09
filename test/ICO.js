@@ -17,14 +17,14 @@ contract("ICO", (accounts) => {
 
   describe("participate", () => {
     describe("should be fail", () => {
-      it("should be fail if owner try to participate", async () => {
+      it("if owner try to participate", async () => {
         await truffleAssert.reverts(
           instance.participate.sendTransaction(),
           "Owner cannot participate."
         );
       });
 
-      it("should be fail if same user try to participate multiply.", async () => {
+      it("if same user try to participate multiply.", async () => {
         await instance.participate.sendTransaction({ from: accounts[1] });
         await truffleAssert.reverts(
           instance.participate.sendTransaction({ from: accounts[1] }),

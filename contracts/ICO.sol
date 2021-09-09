@@ -10,7 +10,7 @@ contract ICO is LimitedToken, Exclusive {
   uint256 public unitPeriodBalance;
 
   uint256 private _numOfParticipants = 0;
-  mapping(address => uint256) participants;
+  mapping(address => uint256) private participants;
 
   constructor(
     string memory name_,
@@ -42,9 +42,16 @@ contract ICO is LimitedToken, Exclusive {
     return participants[account_];
   }
 
-  function withdrawToken() public returns (bool) {
+  function withdrawToken() public exclusive returns (bool) {
     require(!hasEnded(), "The period is still ongoing.");
-    this.transfer(msg.sender, unitPeriodBalance / numOfParticipants());
+    require(participants[msg.sender] != 0, "There's no tokens to withdraw.");
+    uint256 window = unitPeriodBalance / numOfParticipants();
+    if (participants[msg.sender] >= window) {
+      this.transfer(msg.sender, window);
+    } else {
+      this.transfer(msg.sender, participants[msg.sender]);
+    }
+    participants[msg.sender] = 0;
     return true;
   }
 

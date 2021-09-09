@@ -60,7 +60,10 @@ contract("ICO", (accounts) => {
 
     describe("should put the participants in list", () => {
       it("when the caller is accounts[1]", async () => {
-        instance.participate.sendTransaction({ from: accounts[1], value: 1 });
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: "1",
+        });
         expect(
           (await instance.participation.call(accounts[1])).toString()
         ).to.eq("1");
@@ -73,7 +76,10 @@ contract("ICO", (accounts) => {
         expect(
           (await instance.participation.call(accounts[1])).toString()
         ).to.eq("0");
-        instance.participate.sendTransaction({ from: accounts[2], value: 1 });
+        await instance.participate.sendTransaction({
+          from: accounts[2],
+          value: "1",
+        });
         expect(
           (await instance.participation.call(accounts[2])).toString()
         ).to.eq("1");
@@ -106,8 +112,11 @@ contract("ICO", (accounts) => {
     });
 
     describe("should transfer", () => {
-      it("100 token to accounts[1] if participant is only accounts[1]", async () => {
-        await instance.participate.sendTransaction({ from: accounts[1] });
+      it("80 token to accounts[1] if participant is only accounts[1] and he paid only 80 ETH", async () => {
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (8 * 1e19).toString(),
+        });
         mineBlock(10);
         truffleAssert.eventEmitted(
           await instance.withdrawToken.sendTransaction({ from: accounts[1] }),
@@ -116,15 +125,21 @@ contract("ICO", (accounts) => {
             return (
               ev.from == instance.address &&
               ev.to == accounts[1] &&
-              ev.value == (1e20).toString()
+              ev.value == (8 * 1e19).toString()
             );
           }
         );
       });
 
       it("50 token to accounts[1] and accounts[2] if participants are only them", async () => {
-        await instance.participate.sendTransaction({ from: accounts[1] });
-        await instance.participate.sendTransaction({ from: accounts[2] });
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (1e20 / 2).toString(),
+        });
+        await instance.participate.sendTransaction({
+          from: accounts[2],
+          value: (1e20 / 2).toString(),
+        });
 
         mineBlock(10);
 
@@ -149,6 +164,29 @@ contract("ICO", (accounts) => {
               ev.value == (1e20 / 2).toString()
             );
           }
+        );
+      });
+
+      it("should fail if same user try to withdraw multiply", async () => {
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (8 * 1e19).toString(),
+        });
+        mineBlock(10);
+        truffleAssert.eventEmitted(
+          await instance.withdrawToken.sendTransaction({ from: accounts[1] }),
+          "Transfer",
+          (ev) => {
+            return (
+              ev.from == instance.address &&
+              ev.to == accounts[1] &&
+              ev.value == (8 * 1e19).toString()
+            );
+          }
+        );
+        await truffleAssert.reverts(
+          instance.withdrawToken.sendTransaction({ from: accounts[1] }),
+          "There's no tokens to withdraw."
         );
       });
     });

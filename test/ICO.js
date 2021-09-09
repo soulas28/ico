@@ -4,9 +4,23 @@ const truffleAssert = require("truffle-assertions");
 
 let instance;
 
+function mineBlock(number) {
+  for (let i = 0; i < number; i++) {
+    web3.currentProvider.send(
+      {
+        jsonrpc: "2.0",
+        method: "evm_mine",
+        params: [],
+        id: 0,
+      },
+      () => {}
+    );
+  }
+}
+
 contract("ICO", (accounts) => {
   beforeEach(async () => {
-    instance = await ICO.new("TestToken", "TST");
+    instance = await ICO.new("TestToken", "TST", 10);
   });
 
   describe("numOfParticipants", () => {
@@ -29,6 +43,14 @@ contract("ICO", (accounts) => {
         await truffleAssert.reverts(
           instance.participate.sendTransaction({ from: accounts[1] }),
           "You are already participated."
+        );
+      });
+
+      it("if period time window passed", async () => {
+        mineBlock(10);
+        await truffleAssert.reverts(
+          instance.participate.sendTransaction({ from: accounts[1] }),
+          "The period has already been ended."
         );
       });
     });

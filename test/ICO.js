@@ -16,24 +16,26 @@ contract("ICO", (accounts) => {
   });
 
   describe("participate", () => {
-    it("should be fail if owner try to participate", async () => {
-      await truffleAssert.reverts(
-        instance.participate.sendTransaction(),
-        "Owner cannot participate."
-      );
+    describe("should be fail", () => {
+      it("should be fail if owner try to participate", async () => {
+        await truffleAssert.reverts(
+          instance.participate.sendTransaction(),
+          "Owner cannot participate."
+        );
+      });
+
+      it("should be fail if same user try to participate multiply.", async () => {
+        await instance.participate.sendTransaction({ from: accounts[1] });
+        await truffleAssert.reverts(
+          instance.participate.sendTransaction({ from: accounts[1] }),
+          "You are already participated."
+        );
+      });
     });
 
     it("should be success if not participated yet", async () => {
       await truffleAssert.passes(
         instance.participate.sendTransaction({ from: accounts[1] })
-      );
-    });
-
-    it("should be fail if same user try to participate multiply.", async () => {
-      await instance.participate.sendTransaction({ from: accounts[1] });
-      await truffleAssert.reverts(
-        instance.participate.sendTransaction({ from: accounts[1] }),
-        "You are already participated."
       );
     });
 

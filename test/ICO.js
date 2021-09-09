@@ -39,9 +39,12 @@ contract("ICO", (accounts) => {
       });
 
       it("if same user try to participate multiply.", async () => {
-        await instance.participate.sendTransaction({ from: accounts[1] });
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: 1,
+        });
         await truffleAssert.reverts(
-          instance.participate.sendTransaction({ from: accounts[1] }),
+          instance.participate.sendTransaction({ from: accounts[1], value: 1 }),
           "You are already participated."
         );
       });
@@ -57,15 +60,23 @@ contract("ICO", (accounts) => {
 
     describe("should put the participants in list", () => {
       it("when the caller is accounts[1]", async () => {
-        instance.participate.sendTransaction({ from: accounts[1] });
-        expect(await instance.participation.call(accounts[1])).to.be.true;
-        expect(await instance.participation.call(accounts[2])).to.be.false;
+        instance.participate.sendTransaction({ from: accounts[1], value: 1 });
+        expect(
+          (await instance.participation.call(accounts[1])).toString()
+        ).to.eq("1");
+        expect(
+          (await instance.participation.call(accounts[2])).toString()
+        ).to.eq("0");
       });
 
       it("when the caller is accounts[2]", async () => {
-        expect(await instance.participation.call(accounts[1])).to.be.false;
-        instance.participate.sendTransaction({ from: accounts[2] });
-        expect(await instance.participation.call(accounts[2])).to.be.true;
+        expect(
+          (await instance.participation.call(accounts[1])).toString()
+        ).to.eq("0");
+        instance.participate.sendTransaction({ from: accounts[2], value: 1 });
+        expect(
+          (await instance.participation.call(accounts[2])).toString()
+        ).to.eq("1");
       });
     });
 

@@ -48,7 +48,7 @@ contract ICO is LimitedToken, Exclusive {
     return _participants[account_];
   }
 
-  function purchase() public payable returns (bool) {
+  function purchase() public payable exclusive returns (bool) {
     require(hasEnded(), "Last sale not started yet.");
     require(msg.sender != owner(), "Owner cannot purchase.");
 

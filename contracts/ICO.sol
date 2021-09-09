@@ -8,6 +8,7 @@ contract ICO is LimitedToken, Exclusive {
   uint256 public deployedBlock;
   uint256 public periodBlock;
   uint256 public unitPeriodBalance;
+  uint256 public rate; // 100:n
 
   uint256 private _numOfParticipants = 0;
   mapping(address => uint256) private _participants;
@@ -19,11 +20,13 @@ contract ICO is LimitedToken, Exclusive {
     string memory name_,
     string memory symbol_,
     uint256 periodBlock_,
-    uint256 unitPeriodBalance_
+    uint256 unitPeriodBalance_,
+    uint256 rate_
   ) LimitedToken(name_, symbol_) {
     deployedBlock = block.number;
     periodBlock = periodBlock_;
     unitPeriodBalance = unitPeriodBalance_;
+    rate = rate_;
     _mint(address(this), unitPeriodBalance);
   }
 
@@ -36,7 +39,7 @@ contract ICO is LimitedToken, Exclusive {
     require(msg.sender != owner(), "Owner cannot participate.");
     require(_participants[msg.sender] == 0, "You are already participated.");
 
-    _participants[msg.sender] = msg.value;
+    _participants[msg.sender] = ETHtoToken(msg.value);
     _numOfParticipants += 1;
     return true;
   }
@@ -49,8 +52,16 @@ contract ICO is LimitedToken, Exclusive {
     require(hasEnded(), "Last sale not started yet.");
     require(msg.sender != owner(), "Owner cannot purchase.");
 
-    this.transfer(msg.sender, msg.value);
+    this.transfer(msg.sender, ETHtoToken(msg.value));
     return true;
+  }
+
+  function ETHtoToken(uint256 eth_) public view returns (uint256) {
+    return (eth_ * rate) / 100;
+  }
+
+  function TokenToETH(uint256 token_) public view returns (uint256) {
+    return (token_ * 100) / rate;
   }
 
   function withdrawToken() public exclusive returns (bool) {
@@ -60,7 +71,7 @@ contract ICO is LimitedToken, Exclusive {
     uint256 window = unitPeriodBalance / numOfParticipants();
     if (_participants[msg.sender] >= window) {
       this.transfer(msg.sender, window);
-      _withdrawal[msg.sender] = _participants[msg.sender] - window;
+      _withdrawal[msg.sender] = TokenToETH(_participants[msg.sender] - window);
     } else {
       this.transfer(msg.sender, _participants[msg.sender]);
     }

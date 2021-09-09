@@ -20,7 +20,7 @@ function mineBlock(number) {
 
 contract("ICO", (accounts) => {
   beforeEach(async () => {
-    instance = await ICO.new("TestToken", "TST", 10, (1e20).toString());
+    instance = await ICO.new("TestToken", "TST", 10, (1e20).toString(), 100);
   });
 
   describe("numOfParticipants", () => {
@@ -257,5 +257,39 @@ contract("ICO", (accounts) => {
         }
       );
     });
+  });
+
+  it("if rate is 1:2 50ETH=100TST", async () => {
+    instance = await ICO.new("TestToken", "TST", 10, (1e20).toString(), 200);
+    await instance.participate.sendTransaction({
+      from: accounts[1],
+      value: (4 * 1e19).toString(),
+    });
+    mineBlock(10);
+    truffleAssert.eventEmitted(
+      await instance.withdrawToken.sendTransaction({ from: accounts[1] }),
+      "Transfer",
+      (ev) => {
+        return (
+          ev.from == instance.address &&
+          ev.to == accounts[1] &&
+          ev.value == (8 * 1e19).toString()
+        );
+      }
+    );
+    truffleAssert.eventEmitted(
+      await instance.purchase.sendTransaction({
+        from: accounts[1],
+        value: (1e19).toString(),
+      }),
+      "Transfer",
+      (ev) => {
+        return (
+          ev.from == instance.address &&
+          ev.to == accounts[1] &&
+          ev.value == (2 * 1e19).toString()
+        );
+      }
+    );
   });
 });

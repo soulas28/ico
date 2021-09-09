@@ -8,7 +8,8 @@
   "private": true,
   "scripts": {
     "test": "truffle test",
-    "ganache": "ganache-cli"
+    "ganache": "ganache-cli",
+    "coverage": "truffle run coverage"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.1",

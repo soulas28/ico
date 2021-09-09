@@ -191,4 +191,29 @@ contract("ICO", (accounts) => {
       });
     });
   });
+
+  describe("withdrawETH", () => {
+    it("should withdraw remaining ETH", async () => {
+      await instance.participate.sendTransaction({
+        from: accounts[1],
+        value: (120 * 1e18).toString(),
+      });
+      mineBlock(10);
+      await instance.withdrawToken.sendTransaction({ from: accounts[1] });
+      await instance.withdrawETH.sendTransaction({ from: accounts[1] });
+    });
+
+    it("should fail if there's no token to withdraw", async () => {
+      await instance.participate.sendTransaction({
+        from: accounts[1],
+        value: (80 * 1e18).toString(),
+      });
+      mineBlock(10);
+      await instance.withdrawToken.sendTransaction({ from: accounts[1] });
+      await truffleAssert.reverts(
+        instance.withdrawETH.sendTransaction({ from: accounts[1] }),
+        "There's no tokens to withdraw."
+      );
+    });
+  });
 });

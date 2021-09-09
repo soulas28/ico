@@ -11,6 +11,7 @@ contract ICO is LimitedToken, Exclusive {
 
   uint256 private _numOfParticipants = 0;
   mapping(address => uint256) private _participants;
+  uint256 currentPeriod = 0;
 
   mapping(address => uint256) private _withdrawal;
 
@@ -31,7 +32,7 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function participate() public payable exclusive returns (bool) {
-    require(hasEnded(), "The period has already been ended.");
+    require(!hasEnded(), "The period has already been ended.");
     require(msg.sender != owner(), "Owner cannot participate.");
     require(_participants[msg.sender] == 0, "You are already participated.");
 
@@ -44,8 +45,16 @@ contract ICO is LimitedToken, Exclusive {
     return _participants[account_];
   }
 
+  function purchase() public payable returns (bool) {
+    require(hasEnded(), "Last sale not started yet.");
+    require(msg.sender != owner(), "Owner cannot purchase.");
+
+    this.transfer(msg.sender, msg.value);
+    return true;
+  }
+
   function withdrawToken() public exclusive returns (bool) {
-    require(!hasEnded(), "The period is still ongoing.");
+    require(hasEnded(), "The period is still ongoing.");
     require(_participants[msg.sender] != 0, "There's no tokens to withdraw.");
 
     uint256 window = unitPeriodBalance / numOfParticipants();
@@ -60,13 +69,13 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function withdrawETH() public exclusive returns (bool) {
-    require(_withdrawal[msg.sender] != 0, "There's no tokens to withdraw.");
+    require(_withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
     payable(msg.sender).transfer(_withdrawal[msg.sender]);
     _withdrawal[msg.sender] = 0;
     return true;
   }
 
   function hasEnded() public view returns (bool) {
-    return (deployedBlock + periodBlock) >= block.number;
+    return (deployedBlock + periodBlock) < block.number;
   }
 }

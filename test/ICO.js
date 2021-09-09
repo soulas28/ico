@@ -212,7 +212,49 @@ contract("ICO", (accounts) => {
       await instance.withdrawToken.sendTransaction({ from: accounts[1] });
       await truffleAssert.reverts(
         instance.withdrawETH.sendTransaction({ from: accounts[1] }),
-        "There's no tokens to withdraw."
+        "There's no ethers to withdraw."
+      );
+    });
+  });
+
+  describe("purchase", async () => {
+    describe("should fail", () => {
+      it("if remaining purchase period not", async () => {
+        await truffleAssert.reverts(
+          instance.purchase.sendTransaction({ from: accounts[1] }),
+          "Last sale not started yet."
+        );
+      });
+
+      it("if owner try to execute", async () => {
+        mineBlock(10);
+        await truffleAssert.reverts(
+          instance.purchase.sendTransaction(),
+          "Owner cannot purchase."
+        );
+      });
+    });
+
+    it("should transfer remaining token", async () => {
+      await instance.participate.sendTransaction({
+        from: accounts[1],
+        value: (50 * 1e18).toString(),
+      });
+      mineBlock(10);
+      await instance.withdrawToken.sendTransaction({ from: accounts[1] });
+      truffleAssert.eventEmitted(
+        await instance.purchase.sendTransaction({
+          from: accounts[2],
+          value: (20 * 1e18).toString(),
+        }),
+        "Transfer",
+        (ev) => {
+          return (
+            ev.from == instance.address &&
+            ev.to == accounts[2] &&
+            ev.value == (20 * 1e18).toString()
+          );
+        }
       );
     });
   });

@@ -13,7 +13,6 @@ contract ICO is LimitedToken, Exclusive {
 
   mapping(uint256 => uint256) private _numOfParticipants;
   mapping(uint256 => mapping(address => uint256)) private _participants;
-  uint256 public currentPeriod = 0;
 
   mapping(address => uint256) private _withdrawal;
 
@@ -37,6 +36,34 @@ contract ICO is LimitedToken, Exclusive {
     return _numOfParticipants[period_];
   }
 
+  function participation(address account_, uint256 period_)
+    public
+    view
+    returns (uint256)
+  {
+    return _participants[period_][account_];
+  }
+
+  function ETHToToken(uint256 eth_) public view returns (uint256) {
+    return (eth_ * rate) / 100;
+  }
+
+  function TokenToETH(uint256 token_) public view returns (uint256) {
+    return (token_ * 100) / rate;
+  }
+
+  function getCurrentPeriod() public view returns (uint256) {
+    return (block.number - deployedBlock) / 10;
+  }
+
+  function hasPeriodEnded(uint256 period_) public view returns (bool) {
+    return getCurrentPeriod() > period_;
+  }
+
+  function hasSaleEnded() public view returns (bool) {
+    return hasPeriodEnded(numOfPeriods);
+  }
+
   function participate() public payable exclusive returns (bool) {
     require(
       !hasPeriodEnded(numOfPeriods - 1),
@@ -48,17 +75,9 @@ contract ICO is LimitedToken, Exclusive {
       "You are already participated."
     );
 
-    _participants[getCurrentPeriod()][msg.sender] = ETHtoToken(msg.value);
+    _participants[getCurrentPeriod()][msg.sender] = ETHToToken(msg.value);
     _numOfParticipants[getCurrentPeriod()] += 1;
     return true;
-  }
-
-  function participation(address account_, uint256 period_)
-    public
-    view
-    returns (uint256)
-  {
-    return _participants[period_][account_];
   }
 
   function purchase() public payable exclusive returns (bool) {
@@ -66,16 +85,8 @@ contract ICO is LimitedToken, Exclusive {
     require(msg.sender != owner(), "Owner cannot purchase.");
     require(!hasSaleEnded(), "Final sale finished.");
 
-    this.transfer(msg.sender, ETHtoToken(msg.value));
+    this.transfer(msg.sender, ETHToToken(msg.value));
     return true;
-  }
-
-  function ETHtoToken(uint256 eth_) public view returns (uint256) {
-    return (eth_ * rate) / 100;
-  }
-
-  function TokenToETH(uint256 token_) public view returns (uint256) {
-    return (token_ * 100) / rate;
   }
 
   function withdrawToken(uint256 period_) public exclusive returns (bool) {
@@ -103,17 +114,5 @@ contract ICO is LimitedToken, Exclusive {
     payable(msg.sender).transfer(_withdrawal[msg.sender]);
     _withdrawal[msg.sender] = 0;
     return true;
-  }
-
-  function getCurrentPeriod() public view returns (uint256) {
-    return (block.number - deployedBlock) / 10;
-  }
-
-  function hasPeriodEnded(uint256 period_) public view returns (bool) {
-    return getCurrentPeriod() > period_;
-  }
-
-  function hasSaleEnded() public view returns (bool) {
-    return hasPeriodEnded(numOfPeriods);
   }
 }

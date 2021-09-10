@@ -10,6 +10,7 @@ contract ICO is LimitedToken, Exclusive {
   uint256 public unitPeriodBalance;
   uint256 public numOfPeriods;
   uint256 public rate; // 100:n
+  uint256 public withdrawLimit;
 
   mapping(uint256 => uint256) private _numOfParticipants;
   mapping(uint256 => mapping(address => uint256)) private _participants;
@@ -22,14 +23,19 @@ contract ICO is LimitedToken, Exclusive {
     uint256 periodBlock_,
     uint256 numOfPeriods_,
     uint256 unitPeriodBalance_,
-    uint256 rate_
+    uint256 rate_,
+    uint256 tokensForOwner_,
+    uint256 withdrawLimit_
   ) LimitedToken(name_, symbol_) {
     deployedBlock = block.number;
     periodBlock = periodBlock_;
     unitPeriodBalance = unitPeriodBalance_;
     rate = rate_;
     numOfPeriods = numOfPeriods_;
+    withdrawLimit = withdrawLimit_;
     _mint(address(this), unitPeriodBalance * numOfPeriods);
+    _mint(owner(), tokensForOwner_);
+    lock();
   }
 
   function numOfParticipants(uint256 period_) public view returns (uint256) {
@@ -64,6 +70,10 @@ contract ICO is LimitedToken, Exclusive {
     return hasPeriodEnded(numOfPeriods);
   }
 
+  function hasWithdrawalTimeEnded() public view returns (bool) {
+    return block.number > (deployedBlock + periodBlock * (numOfPeriods + 1));
+  }
+
   function participate() public payable exclusive returns (bool) {
     require(
       !hasPeriodEnded(numOfPeriods - 1),
@@ -90,6 +100,7 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function withdrawToken(uint256 period_) public exclusive returns (bool) {
+    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
     require(hasPeriodEnded(period_), "The period is still ongoing.");
     require(
       _participants[period_][msg.sender] != 0,
@@ -111,8 +122,27 @@ contract ICO is LimitedToken, Exclusive {
 
   function withdrawETH() public exclusive returns (bool) {
     require(_withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
+    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
     payable(msg.sender).transfer(_withdrawal[msg.sender]);
     _withdrawal[msg.sender] = 0;
+    return true;
+  }
+
+  function withdrawRemainingToken() public exclusive onlyOwner returns (bool) {
+    require(
+      hasWithdrawalTimeEnded(),
+      "There's remaining time to withdraw yet."
+    );
+    this.transfer(owner(), balanceOf(address(this)));
+    return true;
+  }
+
+  function withdrawRemainingETH() public exclusive onlyOwner returns (bool) {
+    require(
+      hasWithdrawalTimeEnded(),
+      "There's remaining time to withdraw yet."
+    );
+    payable(owner()).transfer(address(this).balance);
     return true;
   }
 }

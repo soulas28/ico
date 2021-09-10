@@ -20,7 +20,16 @@ function mineBlock(number) {
 
 contract("ICO", (accounts) => {
   beforeEach(async () => {
-    instance = await ICO.new("TestToken", "TST", 10, 1, (1e20).toString(), 100);
+    instance = await ICO.new(
+      "TestToken",
+      "TST",
+      10,
+      1,
+      (1e20).toString(),
+      100,
+      100,
+      100
+    );
   });
 
   describe("numOfParticipants", () => {
@@ -113,6 +122,18 @@ contract("ICO", (accounts) => {
         await truffleAssert.reverts(
           instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
           "The period is still ongoing."
+        );
+      });
+
+      it("if exceed the deadline to withdraw", async () => {
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (120 * 1e18).toString(),
+        });
+        mineBlock(120);
+        await truffleAssert.reverts(
+          instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
+          "Withdrawable time exceeded."
         );
       });
     });
@@ -217,16 +238,106 @@ contract("ICO", (accounts) => {
       await instance.withdrawETH.sendTransaction({ from: accounts[1] });
     });
 
-    it("should fail if there's no token to withdraw", async () => {
+    describe("should fail", () => {
+      it("if exceed the deadline to withdraw", async () => {
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (120 * 1e18).toString(),
+        });
+        mineBlock(10);
+        await instance.withdrawToken.sendTransaction("0", {
+          from: accounts[1],
+        });
+        mineBlock(110);
+        await truffleAssert.reverts(
+          instance.withdrawETH.sendTransaction({ from: accounts[1] }),
+          "Withdrawable time exceeded."
+        );
+      });
+
+      it("should fail if there's no token to withdraw", async () => {
+        await instance.participate.sendTransaction({
+          from: accounts[1],
+          value: (80 * 1e18).toString(),
+        });
+        mineBlock(10);
+        await instance.withdrawToken.sendTransaction("0", {
+          from: accounts[1],
+        });
+        await truffleAssert.reverts(
+          instance.withdrawETH.sendTransaction({ from: accounts[1] }),
+          "There's no ethers to withdraw."
+        );
+      });
+    });
+  });
+
+  describe("withdrawRemainingToken", () => {
+    describe("should fail", () => {
+      it("if non-owner user interacted", async () => {
+        await truffleAssert.reverts(
+          instance.withdrawRemainingToken.sendTransaction({
+            from: accounts[1],
+          }),
+          "Permission Denied"
+        );
+      });
+
+      it("should fail if withdrawable time limit doesn't exceeded yet", async () => {
+        await truffleAssert.reverts(
+          instance.withdrawRemainingToken.sendTransaction(),
+          "There's remaining time to withdraw yet."
+        );
+      });
+    });
+
+    it("should transfer remaining tokens to owner", async () => {
+      mineBlock(120);
+      truffleAssert.eventEmitted(
+        await instance.withdrawRemainingToken.sendTransaction(),
+        "Transfer",
+        (ev) => {
+          return (
+            ev.from == instance.address &&
+            ev.to == accounts[0] &&
+            ev.value == (100 * 1e18).toString()
+          );
+        }
+      );
+    });
+  });
+
+  describe("withdrawRemainingETH", () => {
+    describe("should fail", () => {
+      it("if non-owner user interacted", async () => {
+        await truffleAssert.reverts(
+          instance.withdrawRemainingETH.sendTransaction({
+            from: accounts[1],
+          }),
+          "Permission Denied"
+        );
+      });
+
+      it("should fail if withdrawable time limit doesn't exceeded yet", async () => {
+        await truffleAssert.reverts(
+          instance.withdrawRemainingETH.sendTransaction(),
+          "There's remaining time to withdraw yet."
+        );
+      });
+    });
+
+    it("should transfer remaining ethers to owner", async () => {
       await instance.participate.sendTransaction({
         from: accounts[1],
-        value: (80 * 1e18).toString(),
+        value: (120 * 1e18).toString(),
       });
-      mineBlock(10);
-      await instance.withdrawToken.sendTransaction("0", { from: accounts[1] });
-      await truffleAssert.reverts(
-        instance.withdrawETH.sendTransaction({ from: accounts[1] }),
-        "There's no ethers to withdraw."
+      mineBlock(120);
+      expect((await web3.eth.getBalance(instance.address)).toString()).to.eq(
+        (120 * 1e18).toString()
+      );
+      await instance.withdrawRemainingETH.sendTransaction();
+      expect((await web3.eth.getBalance(instance.address)).toString()).to.eq(
+        "0"
       );
     });
   });
@@ -296,7 +407,16 @@ contract("ICO", (accounts) => {
   });
 
   it("if rate is 1:2 50ETH=100TST", async () => {
-    instance = await ICO.new("TestToken", "TST", 10, 1, (1e20).toString(), 200);
+    instance = await ICO.new(
+      "TestToken",
+      "TST",
+      10,
+      1,
+      (1e20).toString(),
+      200,
+      0,
+      100
+    );
     await instance.participate.sendTransaction({
       from: accounts[1],
       value: (4 * 1e19).toString(),
@@ -329,7 +449,16 @@ contract("ICO", (accounts) => {
     );
   });
   it("if rate is 1:2 50ETH=100TST with 2 periods", async () => {
-    instance = await ICO.new("TestToken", "TST", 10, 2, (1e20).toString(), 200);
+    instance = await ICO.new(
+      "TestToken",
+      "TST",
+      10,
+      2,
+      (1e20).toString(),
+      200,
+      0,
+      100
+    );
     await instance.participate.sendTransaction({
       from: accounts[1],
       value: (4 * 1e19).toString(),
@@ -377,6 +506,12 @@ contract("ICO", (accounts) => {
           ev.value == (4 * 1e19).toString()
         );
       }
+    );
+  });
+
+  it("owner will get 100 token in constructor", async () => {
+    expect((await instance.balanceOf.call(accounts[0])).toString()).to.eq(
+      "100"
     );
   });
 });

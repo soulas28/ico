@@ -59,7 +59,7 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function getCurrentPeriod() public view returns (uint256) {
-    return (block.number - deployedBlock) / 10;
+    return (block.number - deployedBlock) / periodBlock;
   }
 
   function hasPeriodEnded(uint256 period_) public view returns (bool) {

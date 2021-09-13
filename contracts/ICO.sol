@@ -110,7 +110,7 @@ contract ICO is LimitedToken, Exclusive {
     uint256 window = unitPeriodBalance / numOfParticipants(period_);
     if (_participants[period_][msg.sender] >= window) {
       this.transfer(msg.sender, window);
-      _withdrawal[msg.sender] = TokenToETH(
+      _withdrawal[msg.sender] += TokenToETH(
         _participants[period_][msg.sender] - window
       );
     } else {

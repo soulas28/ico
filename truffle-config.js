@@ -119,4 +119,8 @@ module.exports = {
   // }
   // }
   plugins: ["solidity-coverage"],
+  contracts_directory: "./contracts/src",
+  contracts_build_directory: "./build/contracts",
+  migrations_directory: "./contracts/migrations",
+  test_directory: "./test/contracts",
 };

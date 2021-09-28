@@ -2,6 +2,7 @@ const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   mode: 'production',
@@ -20,6 +21,18 @@ module.exports = {
         'index.html'
       ),
       inject: true,
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {
+          from: path.resolve(__dirname, 'web-interface', 'assets'),
+          globOptions: {
+            ignore: [
+              path.resolve(__dirname, 'web-interface', 'assets', 'index.html'),
+            ],
+          },
+        },
+      ],
     }),
   ],
   target: 'web',

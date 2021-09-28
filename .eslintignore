@@ -1,0 +1,8 @@
+node_modules
+coverage
+.secret
+.vscode
+build
+coverage.json
+contracts
+truffle-config.js

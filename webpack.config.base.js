@@ -6,7 +6,7 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   mode: 'production',
-  entry: './web-interface/src/index.jsx',
+  entry: './web-interface/src/index.tsx',
   module: {
     rules: [
       {
@@ -16,6 +16,16 @@ module.exports = {
           loader: 'babel-loader',
           options: {
             presets: ['@babel/preset-react'],
+          },
+        },
+      },
+      {
+        test: /.*\.(ts|tsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react', '@babel/preset-typescript'],
           },
         },
       },

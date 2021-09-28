@@ -6,7 +6,21 @@ const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   mode: 'production',
-  entry: './web-interface/src/index.js',
+  entry: './web-interface/src/index.jsx',
+  module: {
+    rules: [
+      {
+        test: /.*\.(js|jsx)$/,
+        exclude: /node_modules/,
+        use: {
+          loader: 'babel-loader',
+          options: {
+            presets: ['@babel/preset-react'],
+          },
+        },
+      },
+    ],
+  },
   output: {
     filename: 'main.js',
     path: path.resolve(__dirname, 'output', 'web-interface'),

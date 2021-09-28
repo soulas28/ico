@@ -9,7 +9,9 @@
   "scripts": {
     "test": "truffle test",
     "ganache": "ganache-cli -e 200000",
-    "coverage": "truffle run coverage"
+    "coverage": "truffle run coverage",
+    "lint:prettier": "prettier --check .",
+    "format": "prettier --write ."
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.1",

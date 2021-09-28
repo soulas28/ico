@@ -1,6 +1,6 @@
 node_modules
+coverage
 .secret
 .vscode
-coverage
-coverage.json
 build
+coverage.json

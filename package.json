@@ -11,7 +11,8 @@
     "coverage": "truffle run coverage",
     "lint:prettier": "prettier --check .",
     "lint:eslint": "eslint .",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "build:interface": "webpack -c ./webpack.config.production.js"
   },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.1",

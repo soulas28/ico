@@ -3,7 +3,7 @@ const HtmlWebpackPlugin = require('html-webpack-plugin')
 
 module.exports = {
   mode: 'production',
-  entry: './web-interface/src/App.js',
+  entry: './web-interface/src/index.js',
   output: {
     filename: 'main.js',
     path: path.resolve(__dirname, 'output', 'web-interface'),
@@ -16,6 +16,7 @@ module.exports = {
         'assets',
         'index.html'
       ),
+      inject: true,
     }),
   ],
   target: 'web',

@@ -6,3 +6,4 @@ build
 coverage.json
 contracts
 truffle-config.js
+output

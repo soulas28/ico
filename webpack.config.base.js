@@ -1,10 +1,11 @@
+/* eslint-disable @typescript-eslint/no-var-requires */
 const path = require('path')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const TerserPlugin = require('terser-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
 
-module.exports = {
+const config = {
   mode: 'production',
   entry: './web-interface/src/index.tsx',
   module: {
@@ -64,3 +65,5 @@ module.exports = {
     minimizer: [new TerserPlugin()],
   },
 }
+
+module.exports = config

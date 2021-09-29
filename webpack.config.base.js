@@ -4,6 +4,7 @@ const ESLintPlugin = require('eslint-webpack-plugin')
 const { CleanWebpackPlugin } = require('clean-webpack-plugin')
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const Visualizer = require('webpack-visualizer-plugin2')
 const TerserPlugin = require('terser-webpack-plugin')
 
 const config = {
@@ -61,6 +62,7 @@ const config = {
         },
       ],
     }),
+    new Visualizer(),
   ],
   target: 'web',
   optimization: {

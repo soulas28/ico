@@ -13,6 +13,7 @@ const config = smp.wrap(
     devServer: {
       compress: true,
       liveReload: true,
+      hot: true,
       port: 8080,
     },
   })

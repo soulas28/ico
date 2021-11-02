@@ -4,5 +4,6 @@ node_modules
 coverage
 coverage.json
 .env
-.npmrc
 build
+env.sh
+yarn-error.log

@@ -15,7 +15,7 @@ contract ICO is LimitedToken, Exclusive {
   mapping(uint256 => uint256) private _numOfParticipants;
   mapping(uint256 => mapping(address => uint256)) private _participants;
 
-  mapping(address => uint256) withdrawal;
+  mapping(address => uint256) public withdrawal;
 
   constructor(
     string memory name_,

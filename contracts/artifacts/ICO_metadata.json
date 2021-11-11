@@ -772,11 +772,11 @@
 			]
 		},
 		"contracts/ICO.sol": {
-			"keccak256": "0x5f150b55f9795c17406aba7e102796e45c8c281b8feed5b6558ca7f1a14f176f",
+			"keccak256": "0x170e9de2f4908ad8dddaafb71861fd7a0f4e9c5e8694a6ade7c751010e84d62e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://169d586ca9961f728d4caf87497f2e7173e322e0967f89113b78cd97526def53",
-				"dweb:/ipfs/Qmb91SNbxTi6W2mzZbQfm6yaN4m3hVUPDQneKdTXaXQGEW"
+				"bzz-raw://e1262a63e012403b5302cc5691fc98a6b19bca8c967964d910bde8d81d3a27a3",
+				"dweb:/ipfs/QmP4a8mV1kL8Foy7snvCPAy9fHLG1PKZ9xTS1kKC18CVAh"
 			]
 		},
 		"contracts/LimitedToken.sol": {

@@ -1,8 +1,8 @@
 //SPDX-License-Identifier:MIT
 pragma solidity 0.8.7;
 
-import "./LimitedToken.sol";
-import "./Exclusive.sol";
+import './LimitedToken.sol';
+import './Exclusive.sol';
 
 contract ICO is LimitedToken, Exclusive {
   uint256 public deployedBlock;
@@ -15,7 +15,7 @@ contract ICO is LimitedToken, Exclusive {
   mapping(uint256 => uint256) private _numOfParticipants;
   mapping(uint256 => mapping(address => uint256)) private _participants;
 
-  mapping(address => uint256) private _withdrawal;
+  mapping(address => uint256) withdrawal;
 
   constructor(
     string memory name_,
@@ -77,12 +77,12 @@ contract ICO is LimitedToken, Exclusive {
   function participate() public payable exclusive returns (bool) {
     require(
       !hasPeriodEnded(numOfPeriods - 1),
-      "All periods have already been ended."
+      'All periods have already been ended.'
     );
-    require(msg.sender != owner(), "Owner cannot participate.");
+    require(msg.sender != owner(), 'Owner cannot participate.');
     require(
       _participants[getCurrentPeriod()][msg.sender] == 0,
-      "You are already participated."
+      'You are already participated.'
     );
 
     _participants[getCurrentPeriod()][msg.sender] = ETHToToken(msg.value);
@@ -91,17 +91,17 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function purchase() public payable exclusive returns (bool) {
-    require(hasPeriodEnded(numOfPeriods - 1), "Final sale not started yet.");
-    require(msg.sender != owner(), "Owner cannot purchase.");
-    require(!hasSaleEnded(), "Final sale finished.");
+    require(hasPeriodEnded(numOfPeriods - 1), 'Final sale not started yet.');
+    require(msg.sender != owner(), 'Owner cannot purchase.');
+    require(!hasSaleEnded(), 'Final sale finished.');
 
     this.transfer(msg.sender, ETHToToken(msg.value));
     return true;
   }
 
   function withdrawToken(uint256 period_) public exclusive returns (bool) {
-    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
-    require(hasPeriodEnded(period_), "The period is still ongoing.");
+    require(!hasWithdrawalTimeEnded(), 'Withdrawable time exceeded.');
+    require(hasPeriodEnded(period_), 'The period is still ongoing.');
     require(
       _participants[period_][msg.sender] != 0,
       "There's no tokens to withdraw."
@@ -110,7 +110,7 @@ contract ICO is LimitedToken, Exclusive {
     uint256 window = unitPeriodBalance / numOfParticipants(period_);
     if (_participants[period_][msg.sender] >= window) {
       this.transfer(msg.sender, window);
-      _withdrawal[msg.sender] += TokenToETH(
+      withdrawal[msg.sender] += TokenToETH(
         _participants[period_][msg.sender] - window
       );
     } else {
@@ -121,10 +121,10 @@ contract ICO is LimitedToken, Exclusive {
   }
 
   function withdrawETH() public exclusive returns (bool) {
-    require(_withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
-    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
-    payable(msg.sender).transfer(_withdrawal[msg.sender]);
-    _withdrawal[msg.sender] = 0;
+    require(withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
+    require(!hasWithdrawalTimeEnded(), 'Withdrawable time exceeded.');
+    payable(msg.sender).transfer(withdrawal[msg.sender]);
+    withdrawal[msg.sender] = 0;
     return true;
   }
 

@@ -1,4 +1,4 @@
-name: Contract Test
+name: Contract Publish
 on:
   release:
     types: [created]

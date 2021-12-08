@@ -1,0 +1,10 @@
+.github
+.solcover.js
+truffle-config.js
+migrations
+test
+build
+coverage
+coverage.json
+.vscode
+contracts/tests

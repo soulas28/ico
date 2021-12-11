@@ -11,6 +11,9 @@
     "coverage": "truffle run coverage",
     "type-gen": "truffle compile && typechain --target=ethers-v5 ./build/contracts/**/*.json"
   },
+  "publishConfig": {
+    "access": "public"
+  },
   "devDependencies": {
     "@openzeppelin/contracts": "^4.3.1",
     "@remix-project/remixd": "^0.5.1",

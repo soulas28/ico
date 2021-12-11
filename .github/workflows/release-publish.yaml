@@ -15,10 +15,10 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
-          always-auth: true
+          cache: 'yarn'
           scope: '@soulas28'
       - run: yarn install
       - run: yarn type-gen
       - run: yarn publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+          NODE_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}

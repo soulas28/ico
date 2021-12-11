@@ -10,6 +10,7 @@ jobs:
         with:
           node-version: 16
           cache: yarn
+          registry-url: 'https://registry.npmjs.org'
           check-latest: true
       - run: yarn install
       - run: yarn ganache &

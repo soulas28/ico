@@ -15,7 +15,7 @@ jobs:
         with:
           node-version: 16
           registry-url: 'https://registry.npmjs.org'
-          cache: 'yarn'
+          cache: yarn
           scope: '@soulas28'
       - run: yarn install
       - run: yarn type-gen

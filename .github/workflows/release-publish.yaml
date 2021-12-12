@@ -20,4 +20,4 @@ jobs:
       - run: yarn type-gen
       - run: yarn publish
         env:
-          NODE_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}
+          NPM_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}

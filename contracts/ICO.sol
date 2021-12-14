@@ -19,7 +19,7 @@ contract ICO is ERC20 {
   mapping(uint256 => uint256) private _numOfParticipants;
   mapping(uint256 => mapping(address => uint256)) private _participants;
 
-  mapping(address => uint256) private _withdrawal;
+  mapping(address => uint256) public withdrawal;
 
   event Unlocked();
 
@@ -153,7 +153,7 @@ contract ICO is ERC20 {
     uint256 window = unitPeriodBalance / numOfParticipants(period_);
     if (_participants[period_][msg.sender] >= window) {
       this.transfer(msg.sender, window);
-      _withdrawal[msg.sender] += TokenToETH(
+      withdrawal[msg.sender] += TokenToETH(
         _participants[period_][msg.sender] - window
       );
     } else {
@@ -164,10 +164,10 @@ contract ICO is ERC20 {
   }
 
   function withdrawETH() public exclusive returns (bool) {
-    require(_withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
+    require(withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
     require(!hasWithdrawalTimeEnded(), 'Withdrawable time exceeded.');
-    payable(msg.sender).transfer(_withdrawal[msg.sender]);
-    _withdrawal[msg.sender] = 0;
+    payable(msg.sender).transfer(withdrawal[msg.sender]);
+    withdrawal[msg.sender] = 0;
     return true;
   }
 

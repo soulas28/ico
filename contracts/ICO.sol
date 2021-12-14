@@ -1,10 +1,14 @@
 //SPDX-License-Identifier:MIT
 pragma solidity 0.8.7;
 
-import './LimitedToken.sol';
-import './Exclusive.sol';
+import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
 
-contract ICO is LimitedToken, Exclusive {
+contract ICO is ERC20 {
+  bool private _isLocked = false;
+
+  address private _owner = msg.sender;
+  bool private _isLimited = false;
+
   uint256 public deployedBlock;
   uint256 public periodBlock;
   uint256 public unitPeriodBalance;
@@ -17,6 +21,8 @@ contract ICO is LimitedToken, Exclusive {
 
   mapping(address => uint256) public withdrawal;
 
+  event Unlocked();
+
   constructor(
     string memory name_,
     string memory symbol_,
@@ -26,7 +32,7 @@ contract ICO is LimitedToken, Exclusive {
     uint256 rate_,
     uint256 tokensForOwner_,
     uint256 withdrawLimit_
-  ) LimitedToken(name_, symbol_) {
+  ) ERC20(name_, symbol_) {
     deployedBlock = block.number;
     periodBlock = periodBlock_;
     unitPeriodBalance = unitPeriodBalance_;
@@ -36,6 +42,43 @@ contract ICO is LimitedToken, Exclusive {
     _mint(address(this), unitPeriodBalance * numOfPeriods);
     _mint(owner(), tokensForOwner_);
     lock();
+  }
+
+  modifier exclusive() {
+    require(!_isLocked, 'Temporally Unavailable');
+    _isLocked = true;
+    _;
+    _isLocked = false;
+  }
+
+  modifier onlyOwner() {
+    require(msg.sender == _owner, 'Permission Denied');
+    _;
+  }
+
+  function owner() public view returns (address) {
+    return _owner;
+  }
+
+  function isLimited() public view returns (bool) {
+    return _isLimited;
+  }
+
+  function lock() internal onlyOwner {
+    _isLimited = true;
+  }
+
+  function unlock() public onlyOwner {
+    _isLimited = false;
+    emit Unlocked();
+  }
+
+  function _beforeTokenTransfer(
+    address from,
+    address,
+    uint256
+  ) internal view override {
+    require(from == address(this) || !isLimited(), 'Transfer not allowed.');
   }
 
   function numOfParticipants(uint256 period_) public view returns (uint256) {

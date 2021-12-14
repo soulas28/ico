@@ -47,7 +47,6 @@ export interface ICOInterface extends ethers.utils.Interface {
     "unitPeriodBalance()": FunctionFragment;
     "unlock()": FunctionFragment;
     "withdrawLimit()": FunctionFragment;
-    "withdrawal(address)": FunctionFragment;
     "numOfParticipants(uint256)": FunctionFragment;
     "participation(address,uint256)": FunctionFragment;
     "ETHToToken(uint256)": FunctionFragment;
@@ -120,7 +119,6 @@ export interface ICOInterface extends ethers.utils.Interface {
     functionFragment: "withdrawLimit",
     values?: undefined
   ): string;
-  encodeFunctionData(functionFragment: "withdrawal", values: [string]): string;
   encodeFunctionData(
     functionFragment: "numOfParticipants",
     values: [BigNumberish]
@@ -222,7 +220,6 @@ export interface ICOInterface extends ethers.utils.Interface {
     functionFragment: "withdrawLimit",
     data: BytesLike
   ): Result;
-  decodeFunctionResult(functionFragment: "withdrawal", data: BytesLike): Result;
   decodeFunctionResult(
     functionFragment: "numOfParticipants",
     data: BytesLike
@@ -427,8 +424,6 @@ export interface ICO extends BaseContract {
 
     withdrawLimit(overrides?: CallOverrides): Promise<[BigNumber]>;
 
-    withdrawal(arg0: string, overrides?: CallOverrides): Promise<[BigNumber]>;
-
     numOfParticipants(
       period_: BigNumberish,
       overrides?: CallOverrides
@@ -587,8 +582,6 @@ export interface ICO extends BaseContract {
 
   withdrawLimit(overrides?: CallOverrides): Promise<BigNumber>;
 
-  withdrawal(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
   numOfParticipants(
     period_: BigNumberish,
     overrides?: CallOverrides
@@ -741,8 +734,6 @@ export interface ICO extends BaseContract {
     unlock(overrides?: CallOverrides): Promise<void>;
 
     withdrawLimit(overrides?: CallOverrides): Promise<BigNumber>;
-
-    withdrawal(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
 
     numOfParticipants(
       period_: BigNumberish,
@@ -920,8 +911,6 @@ export interface ICO extends BaseContract {
 
     withdrawLimit(overrides?: CallOverrides): Promise<BigNumber>;
 
-    withdrawal(arg0: string, overrides?: CallOverrides): Promise<BigNumber>;
-
     numOfParticipants(
       period_: BigNumberish,
       overrides?: CallOverrides
@@ -1083,11 +1072,6 @@ export interface ICO extends BaseContract {
     ): Promise<PopulatedTransaction>;
 
     withdrawLimit(overrides?: CallOverrides): Promise<PopulatedTransaction>;
-
-    withdrawal(
-      arg0: string,
-      overrides?: CallOverrides
-    ): Promise<PopulatedTransaction>;
 
     numOfParticipants(
       period_: BigNumberish,

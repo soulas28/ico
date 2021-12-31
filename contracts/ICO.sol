@@ -1,14 +1,10 @@
 //SPDX-License-Identifier:MIT
-pragma solidity 0.8.7;
+pragma solidity =0.8.7;
 
-import '@openzeppelin/contracts/token/ERC20/ERC20.sol';
+import "./LimitedToken.sol";
+import "./Exclusive.sol";
 
-contract ICO is ERC20 {
-  bool private _isLocked = false;
-
-  address private _owner = msg.sender;
-  bool private _isLimited = false;
-
+contract ICO is LimitedToken, Exclusive {
   uint256 public deployedBlock;
   uint256 public periodBlock;
   uint256 public unitPeriodBalance;
@@ -21,8 +17,6 @@ contract ICO is ERC20 {
 
   mapping(address => uint256) public withdrawal;
 
-  event Unlocked();
-
   constructor(
     string memory name_,
     string memory symbol_,
@@ -32,7 +26,7 @@ contract ICO is ERC20 {
     uint256 rate_,
     uint256 tokensForOwner_,
     uint256 withdrawLimit_
-  ) ERC20(name_, symbol_) {
+  ) LimitedToken(name_, symbol_) {
     deployedBlock = block.number;
     periodBlock = periodBlock_;
     unitPeriodBalance = unitPeriodBalance_;
@@ -42,43 +36,6 @@ contract ICO is ERC20 {
     _mint(address(this), unitPeriodBalance * numOfPeriods);
     _mint(owner(), tokensForOwner_);
     lock();
-  }
-
-  modifier exclusive() {
-    require(!_isLocked, 'Temporally Unavailable');
-    _isLocked = true;
-    _;
-    _isLocked = false;
-  }
-
-  modifier onlyOwner() {
-    require(msg.sender == _owner, 'Permission Denied');
-    _;
-  }
-
-  function owner() public view returns (address) {
-    return _owner;
-  }
-
-  function isLimited() public view returns (bool) {
-    return _isLimited;
-  }
-
-  function lock() internal onlyOwner {
-    _isLimited = true;
-  }
-
-  function unlock() public onlyOwner {
-    _isLimited = false;
-    emit Unlocked();
-  }
-
-  function _beforeTokenTransfer(
-    address from,
-    address,
-    uint256
-  ) internal view override {
-    require(from == address(this) || !isLimited(), 'Transfer not allowed.');
   }
 
   function numOfParticipants(uint256 period_) public view returns (uint256) {
@@ -120,12 +77,12 @@ contract ICO is ERC20 {
   function participate() public payable exclusive returns (bool) {
     require(
       !hasPeriodEnded(numOfPeriods - 1),
-      'All periods have already been ended.'
+      "All periods have already been ended."
     );
-    require(msg.sender != owner(), 'Owner cannot participate.');
+    require(msg.sender != owner(), "Owner cannot participate.");
     require(
       _participants[getCurrentPeriod()][msg.sender] == 0,
-      'You are already participated.'
+      "You are already participated."
     );
 
     _participants[getCurrentPeriod()][msg.sender] = ETHToToken(msg.value);
@@ -134,17 +91,17 @@ contract ICO is ERC20 {
   }
 
   function purchase() public payable exclusive returns (bool) {
-    require(hasPeriodEnded(numOfPeriods - 1), 'Final sale not started yet.');
-    require(msg.sender != owner(), 'Owner cannot purchase.');
-    require(!hasSaleEnded(), 'Final sale finished.');
+    require(hasPeriodEnded(numOfPeriods - 1), "Final sale not started yet.");
+    require(msg.sender != owner(), "Owner cannot purchase.");
+    require(!hasSaleEnded(), "Final sale finished.");
 
     this.transfer(msg.sender, ETHToToken(msg.value));
     return true;
   }
 
   function withdrawToken(uint256 period_) public exclusive returns (bool) {
-    require(!hasWithdrawalTimeEnded(), 'Withdrawable time exceeded.');
-    require(hasPeriodEnded(period_), 'The period is still ongoing.');
+    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
+    require(hasPeriodEnded(period_), "The period is still ongoing.");
     require(
       _participants[period_][msg.sender] != 0,
       "There's no tokens to withdraw."
@@ -165,7 +122,7 @@ contract ICO is ERC20 {
 
   function withdrawETH() public exclusive returns (bool) {
     require(withdrawal[msg.sender] != 0, "There's no ethers to withdraw.");
-    require(!hasWithdrawalTimeEnded(), 'Withdrawable time exceeded.');
+    require(!hasWithdrawalTimeEnded(), "Withdrawable time exceeded.");
     payable(msg.sender).transfer(withdrawal[msg.sender]);
     withdrawal[msg.sender] = 0;
     return true;

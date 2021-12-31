@@ -1,6 +1,6 @@
-const ICO = artifacts.require('ICOForTest');
-const { expect } = require('chai');
-const truffleAssert = require('truffle-assertions');
+const ICO = artifacts.require("ICO");
+const { expect } = require("chai");
+const truffleAssert = require("truffle-assertions");
 
 let instance;
 
@@ -8,8 +8,8 @@ function mineBlock(number) {
   for (let i = 0; i < number; i++) {
     web3.currentProvider.send(
       {
-        jsonrpc: '2.0',
-        method: 'evm_mine',
+        jsonrpc: "2.0",
+        method: "evm_mine",
         params: [],
         id: 0,
       },
@@ -18,11 +18,11 @@ function mineBlock(number) {
   }
 }
 
-contract('ICO', (accounts) => {
+contract("ICO", (accounts) => {
   beforeEach(async () => {
     instance = await ICO.new(
-      'TestToken',
-      'TST',
+      "TestToken",
+      "TST",
       10,
       1,
       (1e20).toString(),
@@ -32,124 +32,124 @@ contract('ICO', (accounts) => {
     );
   });
 
-  describe('numOfParticipants', () => {
-    it('should be 0 when no one participated.', async () => {
-      expect((await instance.numOfParticipants.call('0')).toString()).to.eq(
-        '0'
+  describe("numOfParticipants", () => {
+    it("should be 0 when no one participated.", async () => {
+      expect((await instance.numOfParticipants.call("0")).toString()).to.eq(
+        "0"
       );
     });
   });
 
-  describe('participate', () => {
-    describe('should be fail', () => {
-      it('if owner try to participate', async () => {
+  describe("participate", () => {
+    describe("should be fail", () => {
+      it("if owner try to participate", async () => {
         await truffleAssert.reverts(
           instance.participate.sendTransaction(),
-          'Owner cannot participate.'
+          "Owner cannot participate."
         );
       });
 
-      it('if same user try to participate multiply.', async () => {
+      it("if same user try to participate multiply.", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: 1,
         });
         await truffleAssert.reverts(
           instance.participate.sendTransaction({ from: accounts[1], value: 1 }),
-          'You are already participated.'
+          "You are already participated."
         );
       });
 
-      it('if period time window passed', async () => {
+      it("if period time window passed", async () => {
         mineBlock(10);
         await truffleAssert.reverts(
           instance.participate.sendTransaction({ from: accounts[1] }),
-          'All periods have already been ended.'
+          "All periods have already been ended."
         );
       });
     });
 
-    describe('should put the participants in list', () => {
-      it('when the caller is accounts[1]', async () => {
+    describe("should put the participants in list", () => {
+      it("when the caller is accounts[1]", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
-          value: '1',
+          value: "1",
         });
         expect(
-          (await instance.participation.call(accounts[1], '0')).toString()
-        ).to.eq('1');
+          (await instance.participation.call(accounts[1], "0")).toString()
+        ).to.eq("1");
         expect(
-          (await instance.participation.call(accounts[2], '0')).toString()
-        ).to.eq('0');
+          (await instance.participation.call(accounts[2], "0")).toString()
+        ).to.eq("0");
       });
 
-      it('when the caller is accounts[2]', async () => {
+      it("when the caller is accounts[2]", async () => {
         expect(
-          (await instance.participation.call(accounts[1], '0')).toString()
-        ).to.eq('0');
+          (await instance.participation.call(accounts[1], "0")).toString()
+        ).to.eq("0");
         await instance.participate.sendTransaction({
           from: accounts[2],
-          value: '1',
+          value: "1",
         });
         expect(
-          (await instance.participation.call(accounts[2], '0')).toString()
-        ).to.eq('1');
+          (await instance.participation.call(accounts[2], "0")).toString()
+        ).to.eq("1");
       });
     });
 
-    describe('should set the value of numOfParticipants', () => {
-      it('1 after once executed', async () => {
+    describe("should set the value of numOfParticipants", () => {
+      it("1 after once executed", async () => {
         await instance.participate.sendTransaction({ from: accounts[1] });
-        expect((await instance.numOfParticipants.call('0')).toString()).to.eq(
-          '1'
+        expect((await instance.numOfParticipants.call("0")).toString()).to.eq(
+          "1"
         );
       });
 
-      it('2 after twice executed', async () => {
+      it("2 after twice executed", async () => {
         await instance.participate.sendTransaction({ from: accounts[1] });
         await instance.participate.sendTransaction({ from: accounts[2] });
-        expect((await instance.numOfParticipants.call('0')).toString()).to.eq(
-          '2'
+        expect((await instance.numOfParticipants.call("0")).toString()).to.eq(
+          "2"
         );
       });
     });
   });
 
-  describe('withdrawToken', () => {
-    describe('should be fail', () => {
-      it('if period has not been ended yet', async () => {
+  describe("withdrawToken", () => {
+    describe("should be fail", () => {
+      it("if period has not been ended yet", async () => {
         await instance.participate.sendTransaction({ from: accounts[1] });
         await truffleAssert.reverts(
-          instance.withdrawToken.sendTransaction('0', { from: accounts[1] }),
-          'The period is still ongoing.'
+          instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
+          "The period is still ongoing."
         );
       });
 
-      it('if exceed the deadline to withdraw', async () => {
+      it("if exceed the deadline to withdraw", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: (120 * 1e18).toString(),
         });
         mineBlock(120);
         await truffleAssert.reverts(
-          instance.withdrawToken.sendTransaction('0', { from: accounts[1] }),
-          'Withdrawable time exceeded.'
+          instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
+          "Withdrawable time exceeded."
         );
       });
     });
 
-    describe('should transfer', () => {
-      it('80 token to accounts[1] if participant is only accounts[1] and he paid only 80 ETH', async () => {
+    describe("should transfer", () => {
+      it("80 token to accounts[1] if participant is only accounts[1] and he paid only 80 ETH", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: (8 * 1e19).toString(),
         });
         mineBlock(10);
         truffleAssert.eventEmitted(
-          await instance.withdrawToken.sendTransaction('0', {
+          await instance.withdrawToken.sendTransaction("0", {
             from: accounts[1],
           }),
-          'Transfer',
+          "Transfer",
           (ev) => {
             return (
               ev.from == instance.address &&
@@ -160,7 +160,7 @@ contract('ICO', (accounts) => {
         );
       });
 
-      it('50 token to accounts[1] and accounts[2] if participants are only them', async () => {
+      it("50 token to accounts[1] and accounts[2] if participants are only them", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: (1e20 / 2).toString(),
@@ -173,10 +173,10 @@ contract('ICO', (accounts) => {
         mineBlock(10);
 
         truffleAssert.eventEmitted(
-          await instance.withdrawToken.sendTransaction('0', {
+          await instance.withdrawToken.sendTransaction("0", {
             from: accounts[1],
           }),
-          'Transfer',
+          "Transfer",
           (ev) => {
             return (
               ev.from == instance.address &&
@@ -186,10 +186,10 @@ contract('ICO', (accounts) => {
           }
         );
         truffleAssert.eventEmitted(
-          await instance.withdrawToken.sendTransaction('0', {
+          await instance.withdrawToken.sendTransaction("0", {
             from: accounts[2],
           }),
-          'Transfer',
+          "Transfer",
           (ev) => {
             return (
               ev.from == instance.address &&
@@ -200,17 +200,17 @@ contract('ICO', (accounts) => {
         );
       });
 
-      it('should fail if same user try to withdraw multiply', async () => {
+      it("should fail if same user try to withdraw multiply", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: (8 * 1e19).toString(),
         });
         mineBlock(10);
         truffleAssert.eventEmitted(
-          await instance.withdrawToken.sendTransaction('0', {
+          await instance.withdrawToken.sendTransaction("0", {
             from: accounts[1],
           }),
-          'Transfer',
+          "Transfer",
           (ev) => {
             return (
               ev.from == instance.address &&
@@ -220,38 +220,38 @@ contract('ICO', (accounts) => {
           }
         );
         await truffleAssert.reverts(
-          instance.withdrawToken.sendTransaction('0', { from: accounts[1] }),
+          instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
           "There's no tokens to withdraw."
         );
       });
     });
   });
 
-  describe('withdrawETH', () => {
-    it('should withdraw remaining ETH', async () => {
+  describe("withdrawETH", () => {
+    it("should withdraw remaining ETH", async () => {
       await instance.participate.sendTransaction({
         from: accounts[1],
         value: (120 * 1e18).toString(),
       });
       mineBlock(10);
-      await instance.withdrawToken.sendTransaction('0', { from: accounts[1] });
+      await instance.withdrawToken.sendTransaction("0", { from: accounts[1] });
       await instance.withdrawETH.sendTransaction({ from: accounts[1] });
     });
 
-    describe('should fail', () => {
-      it('if exceed the deadline to withdraw', async () => {
+    describe("should fail", () => {
+      it("if exceed the deadline to withdraw", async () => {
         await instance.participate.sendTransaction({
           from: accounts[1],
           value: (120 * 1e18).toString(),
         });
         mineBlock(10);
-        await instance.withdrawToken.sendTransaction('0', {
+        await instance.withdrawToken.sendTransaction("0", {
           from: accounts[1],
         });
         mineBlock(110);
         await truffleAssert.reverts(
           instance.withdrawETH.sendTransaction({ from: accounts[1] }),
-          'Withdrawable time exceeded.'
+          "Withdrawable time exceeded."
         );
       });
 
@@ -261,7 +261,7 @@ contract('ICO', (accounts) => {
           value: (80 * 1e18).toString(),
         });
         mineBlock(10);
-        await instance.withdrawToken.sendTransaction('0', {
+        await instance.withdrawToken.sendTransaction("0", {
           from: accounts[1],
         });
         await truffleAssert.reverts(
@@ -272,14 +272,14 @@ contract('ICO', (accounts) => {
     });
   });
 
-  describe('withdrawRemainingToken', () => {
-    describe('should fail', () => {
-      it('if non-owner user interacted', async () => {
+  describe("withdrawRemainingToken", () => {
+    describe("should fail", () => {
+      it("if non-owner user interacted", async () => {
         await truffleAssert.reverts(
           instance.withdrawRemainingToken.sendTransaction({
             from: accounts[1],
           }),
-          'Permission Denied'
+          "Permission Denied"
         );
       });
 
@@ -291,11 +291,11 @@ contract('ICO', (accounts) => {
       });
     });
 
-    it('should transfer remaining tokens to owner', async () => {
+    it("should transfer remaining tokens to owner", async () => {
       mineBlock(120);
       truffleAssert.eventEmitted(
         await instance.withdrawRemainingToken.sendTransaction(),
-        'Transfer',
+        "Transfer",
         (ev) => {
           return (
             ev.from == instance.address &&
@@ -307,14 +307,14 @@ contract('ICO', (accounts) => {
     });
   });
 
-  describe('withdrawRemainingETH', () => {
-    describe('should fail', () => {
-      it('if non-owner user interacted', async () => {
+  describe("withdrawRemainingETH", () => {
+    describe("should fail", () => {
+      it("if non-owner user interacted", async () => {
         await truffleAssert.reverts(
           instance.withdrawRemainingETH.sendTransaction({
             from: accounts[1],
           }),
-          'Permission Denied'
+          "Permission Denied"
         );
       });
 
@@ -326,7 +326,7 @@ contract('ICO', (accounts) => {
       });
     });
 
-    it('should transfer remaining ethers to owner', async () => {
+    it("should transfer remaining ethers to owner", async () => {
       await instance.participate.sendTransaction({
         from: accounts[1],
         value: (120 * 1e18).toString(),
@@ -337,50 +337,50 @@ contract('ICO', (accounts) => {
       );
       await instance.withdrawRemainingETH.sendTransaction();
       expect((await web3.eth.getBalance(instance.address)).toString()).to.eq(
-        '0'
+        "0"
       );
     });
   });
 
-  describe('purchase', async () => {
-    describe('should fail', () => {
-      it('if final sale not started yet', async () => {
+  describe("purchase", async () => {
+    describe("should fail", () => {
+      it("if final sale not started yet", async () => {
         await truffleAssert.reverts(
           instance.purchase.sendTransaction({ from: accounts[1] }),
-          'Final sale not started yet.'
+          "Final sale not started yet."
         );
       });
 
-      it('if owner try to execute', async () => {
+      it("if owner try to execute", async () => {
         mineBlock(10);
         await truffleAssert.reverts(
           instance.purchase.sendTransaction(),
-          'Owner cannot purchase.'
+          "Owner cannot purchase."
         );
       });
 
-      it('if final sale has finished', async () => {
+      it("if final sale has finished", async () => {
         mineBlock(20);
         await truffleAssert.reverts(
           instance.purchase.sendTransaction({ from: accounts[1] }),
-          'Final sale finished.'
+          "Final sale finished."
         );
       });
     });
 
-    it('should transfer remaining token', async () => {
+    it("should transfer remaining token", async () => {
       await instance.participate.sendTransaction({
         from: accounts[1],
         value: (50 * 1e18).toString(),
       });
       mineBlock(10);
-      await instance.withdrawToken.sendTransaction('0', { from: accounts[1] });
+      await instance.withdrawToken.sendTransaction("0", { from: accounts[1] });
       truffleAssert.eventEmitted(
         await instance.purchase.sendTransaction({
           from: accounts[2],
           value: (20 * 1e18).toString(),
         }),
-        'Transfer',
+        "Transfer",
         (ev) => {
           return (
             ev.from == instance.address &&
@@ -392,24 +392,24 @@ contract('ICO', (accounts) => {
     });
   });
 
-  describe('getCurrentPeriod', () => {
-    describe('should return', () => {
-      it('0 after 5 block passed', async () => {
+  describe("getCurrentPeriod", () => {
+    describe("should return", () => {
+      it("0 after 5 block passed", async () => {
         mineBlock(5);
-        expect((await instance.getCurrentPeriod.call()).toString()).to.eq('0');
+        expect((await instance.getCurrentPeriod.call()).toString()).to.eq("0");
       });
 
-      it('1 after 10 block passed', async () => {
+      it("1 after 10 block passed", async () => {
         mineBlock(10);
-        expect((await instance.getCurrentPeriod.call()).toString()).to.eq('1');
+        expect((await instance.getCurrentPeriod.call()).toString()).to.eq("1");
       });
     });
   });
 
-  it('if rate is 1:2 50ETH=100TST', async () => {
+  it("if rate is 1:2 50ETH=100TST", async () => {
     instance = await ICO.new(
-      'TestToken',
-      'TST',
+      "TestToken",
+      "TST",
       10,
       1,
       (1e20).toString(),
@@ -423,8 +423,8 @@ contract('ICO', (accounts) => {
     });
     mineBlock(10);
     truffleAssert.eventEmitted(
-      await instance.withdrawToken.sendTransaction('0', { from: accounts[1] }),
-      'Transfer',
+      await instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
+      "Transfer",
       (ev) => {
         return (
           ev.from == instance.address &&
@@ -438,7 +438,7 @@ contract('ICO', (accounts) => {
         from: accounts[1],
         value: (1e19).toString(),
       }),
-      'Transfer',
+      "Transfer",
       (ev) => {
         return (
           ev.from == instance.address &&
@@ -448,10 +448,10 @@ contract('ICO', (accounts) => {
       }
     );
   });
-  it('if rate is 1:2 50ETH=100TST with 2 periods', async () => {
+  it("if rate is 1:2 50ETH=100TST with 2 periods", async () => {
     instance = await ICO.new(
-      'TestToken',
-      'TST',
+      "TestToken",
+      "TST",
       10,
       2,
       (1e20).toString(),
@@ -465,8 +465,8 @@ contract('ICO', (accounts) => {
     });
     mineBlock(10);
     truffleAssert.eventEmitted(
-      await instance.withdrawToken.sendTransaction('0', { from: accounts[1] }),
-      'Transfer',
+      await instance.withdrawToken.sendTransaction("0", { from: accounts[1] }),
+      "Transfer",
       (ev) => {
         return (
           ev.from == instance.address &&
@@ -482,8 +482,8 @@ contract('ICO', (accounts) => {
     });
     mineBlock(10);
     truffleAssert.eventEmitted(
-      await instance.withdrawToken.sendTransaction('1', { from: accounts[1] }),
-      'Transfer',
+      await instance.withdrawToken.sendTransaction("1", { from: accounts[1] }),
+      "Transfer",
       (ev) => {
         return (
           ev.from == instance.address &&
@@ -498,7 +498,7 @@ contract('ICO', (accounts) => {
         from: accounts[1],
         value: (2 * 1e19).toString(),
       }),
-      'Transfer',
+      "Transfer",
       (ev) => {
         return (
           ev.from == instance.address &&
@@ -509,74 +509,9 @@ contract('ICO', (accounts) => {
     );
   });
 
-  it('owner will get 100 token in constructor', async () => {
+  it("owner will get 100 token in constructor", async () => {
     expect((await instance.balanceOf.call(accounts[0])).toString()).to.eq(
-      '100'
+      "100"
     );
-  });
-
-  it("owner should hold the contract owner's address", async () => {
-    expect((await instance.owner.call()).toString()).to.eq(accounts[0]);
-  });
-
-  // LimitedToken
-  describe('Lock method', () => {
-    it('should be executed by contract owner', async () => {
-      await truffleAssert.passes(instance.bypassedLock.sendTransaction());
-    });
-
-    it('should not be executed by non-owner users', async () => {
-      await truffleAssert.reverts(
-        instance.bypassedLock.sendTransaction({ from: accounts[1] })
-      );
-    });
-
-    it('should set the limitation status true', async () => {
-      expect(await instance.isLimited.call()).to.eq(false);
-      await instance.bypassedLock.sendTransaction();
-      expect(await instance.isLimited.call()).to.eq(true);
-    });
-  });
-
-  describe('Unlock method', () => {
-    it('should be executed by contract owner', async () => {
-      await truffleAssert.passes(instance.unlock.sendTransaction());
-    });
-
-    it('should not be executed by non-owner users', async () => {
-      await truffleAssert.reverts(
-        instance.unlock.sendTransaction({ from: accounts[1] })
-      );
-    });
-
-    it('should set the limitation status false', async () => {
-      await instance.bypassedLock.sendTransaction();
-      expect(await instance.isLimited.call()).to.eq(true);
-      await instance.unlock.sendTransaction();
-      expect(await instance.isLimited.call()).to.eq(false);
-    });
-
-    it('should emit Unlocked event', async () => {
-      truffleAssert.eventEmitted(
-        await instance.unlock.sendTransaction(),
-        'Unlocked'
-      );
-    });
-  });
-
-  describe('transfer method', () => {
-    it('should be fail if locked', async () => {
-      await instance.bypassedLock.sendTransaction();
-      await truffleAssert.reverts(
-        instance.transfer.sendTransaction(accounts[1], 0),
-        'Transfer not allowed.'
-      );
-    });
-
-    it('should be success if not locked', async () => {
-      await truffleAssert.passes(
-        instance.transfer.sendTransaction(accounts[1], 0)
-      );
-    });
   });
 });

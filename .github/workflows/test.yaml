@@ -9,10 +9,11 @@ jobs:
       - uses: actions/setup-node@v2
         with:
           node-version: 16
-          registry-url: 'https://registry.npmjs.org'
+          registry-url: "https://registry.npmjs.org"
           check-latest: true
-          cache: 'yarn'
+          cache: "yarn"
       - run: yarn install
+      - run: mv ./.env.sample ./.env
       - run: yarn ganache &
       - run: yarn test
       - run: yarn type-gen

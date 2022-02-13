@@ -3,7 +3,6 @@
 truffle-config.js
 migrations
 test
-build
 coverage
 coverage.json
 .vscode

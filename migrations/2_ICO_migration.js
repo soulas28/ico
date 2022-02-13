@@ -1,6 +1,6 @@
 const ICO = artifacts.require("ICO");
 
-const name = process.env.NAME || "";
+const name = process.env.TOKEN_NAME || "";
 const symbol = process.env.SYMBOL || "";
 const periodBlock = process.env.PERIOD_BLOCK || "";
 const numPeriods = process.env.NUM_PERIODS || "";

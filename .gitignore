@@ -6,3 +6,4 @@ coverage.json
 .env
 build
 yarn-error.log
+types

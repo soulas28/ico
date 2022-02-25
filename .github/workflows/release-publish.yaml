@@ -19,9 +19,6 @@ jobs:
           scope: "@soulas28"
           check-latest: true
       - run: yarn install
-      - run: mv ./.env.sample ./.env
-      - run: yarn type-gen
-      - run: yarn truffle compile
       - run: yarn publish
         env:
           NODE_AUTH_TOKEN: ${{ secrets.YARN_TOKEN }}
